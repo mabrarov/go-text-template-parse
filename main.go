@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"slices"
 	"text/template/parse"
 )
 
@@ -13,6 +14,7 @@ func main() {
 
 func listTemplateFields(node parse.Node) []string {
 	var ids []string
+	//goland:noinspection ALL
 	switch node.Type() {
 	case parse.NodeList:
 		listNode := node.(*parse.ListNode)
@@ -21,10 +23,11 @@ func listTemplateFields(node parse.Node) []string {
 		}
 	case parse.NodeAction:
 		actionNode := node.(*parse.ActionNode)
-		if actionNode.Pipe != nil {
-			for _, cmdNode := range actionNode.Pipe.Cmds {
-				ids = append(ids, listTemplateFields(cmdNode)...)
-			}
+		if actionNode.Pipe == nil {
+			break
+		}
+		for _, cmdNode := range actionNode.Pipe.Cmds {
+			ids = append(ids, listTemplateFields(cmdNode)...)
 		}
 	case parse.NodeCommand:
 		commandNode := node.(*parse.CommandNode)
@@ -33,8 +36,7 @@ func listTemplateFields(node parse.Node) []string {
 		}
 	case parse.NodeField:
 		fieldNode := node.(*parse.FieldNode)
-		ids = append(ids, fieldNode.Ident...)
-
+		ids = slices.Clone(fieldNode.Ident)
 	}
 	return ids
 }
