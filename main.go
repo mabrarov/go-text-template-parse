@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"fmt"
 	"html/template"
 	"slices"
@@ -8,8 +9,8 @@ import (
 )
 
 func main() {
-	t := template.Must(template.New("cooltemplate").Parse(`<h1>{{ .name }} {{ printf "%d" .age }}</h1>`))
-	fmt.Println(listTemplateFields(t.Tree.Root))
+	t := template.Must(template.New("cooltemplate").Parse(`<h1>{{ .name }} {{ printf "%s: %d" .name .age }}</h1>`))
+	fmt.Println(unique(listTemplateFields(t.Tree.Root)))
 }
 
 func listTemplateFields(node parse.Node) []string {
@@ -39,4 +40,16 @@ func listTemplateFields(node parse.Node) []string {
 		ids = slices.Clone(fieldNode.Ident)
 	}
 	return ids
+}
+
+func unique[T cmp.Ordered](collection []T) []T {
+	m := make(map[T]struct{}, len(collection))
+	for _, v := range collection {
+		m[v] = struct{}{}
+	}
+	s := make([]T, 0, len(m))
+	for k, _ := range m {
+		s = append(s, k)
+	}
+	return s
 }
